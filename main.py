@@ -18,32 +18,32 @@ def check_run_limit(limit=3):
     folder_path = os.path.join(appdata, "scraper_demo")
     file_path = os.path.join(folder_path, "run_count.txt")
 
-    # Crear carpeta si no existe
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
-        # Marcar como oculta
         os.system(f'attrib +h "{folder_path}"')
 
-    # Crear archivo si no existe (primera ejecución)
     if not os.path.exists(file_path):
+        count = 1
         with open(file_path, "w") as f:
-            f.write("1")
-        return True
+            f.write(str(count))
+    else:
+        with open(file_path, "r") as f:
+            try:
+                count = int(f.read().strip()) + 1
+            except ValueError:
+                count = 1
 
-    # Leer número de ejecuciones
-    with open(file_path, "r") as f:
-        try:
-            count = int(f.read().strip())
-        except ValueError:
-            count = 0  # Corrompido = empezar desde 0
+        if count > limit:
+            print("\n" + "❌ Límite de ejecuciones alcanzado. Contacta al desarrollador.\n")
+            return False
 
-    if count >= limit:
-        print("❌ Límite de ejecuciones alcanzado. Contacta al desarrollador.")
-        return False
+        with open(file_path, "w") as f:
+            f.write(str(count))
 
-    # Incrementar contador
-    with open(file_path, "w") as f:
-        f.write(str(count + 1))
+    usos_restantes = limit - count
+    print("\n" + "-"*50)
+    print(f"🧮 Uso {count} de {limit} | Te quedan {usos_restantes if usos_restantes >= 0 else 0} uso(s)")
+    print("-"*50 + "\n")
     return True
 
 # Configurar logging
@@ -186,9 +186,11 @@ def extract_business_data(driver, city_filter):
     }
 
 def get_user_input():
-    print("\n" + "="*50)
-    print("🔍 SCRAPER DE GOOGLE MAPS".center(50))
-    print("="*50 + "\n")
+    print("\n" + "="*60)
+    print("🚀 BIENVENIDO AL SCRAPER DE GOOGLE MAPS 🚀".center(60))
+    print("".center(60))
+    print("💼 Extracción automática de negocios locales".center(60))
+    print("="*60 + "\n")
     
     while True:
         search_term = input("Ingrese el término de búsqueda (ej: 'clínicas estéticas en Málaga'): ").strip()
@@ -304,6 +306,11 @@ def main():
             logger.warning("⚠️ No se extrajeron datos de negocios")
 
     finally:
+        print("\n" + "="*60)
+        print("✅ Proceso finalizado.".center(60))
+        print("👨‍💻 Developed by elpapetoh".center(60))
+        print("="*60 + "\n")
+
         driver.quit()
         logger.info("🧹 Driver cerrado correctamente")
 
