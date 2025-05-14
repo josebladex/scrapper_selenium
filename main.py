@@ -11,6 +11,40 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from webdriver_manager.chrome import ChromeDriverManager
+import os
+
+def check_run_limit(limit=3):
+    appdata = os.getenv('APPDATA')
+    folder_path = os.path.join(appdata, "scraper_demo")
+    file_path = os.path.join(folder_path, "run_count.txt")
+
+    # Crear carpeta si no existe
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        # Marcar como oculta
+        os.system(f'attrib +h "{folder_path}"')
+
+    # Crear archivo si no existe (primera ejecución)
+    if not os.path.exists(file_path):
+        with open(file_path, "w") as f:
+            f.write("1")
+        return True
+
+    # Leer número de ejecuciones
+    with open(file_path, "r") as f:
+        try:
+            count = int(f.read().strip())
+        except ValueError:
+            count = 0  # Corrompido = empezar desde 0
+
+    if count >= limit:
+        print("❌ Límite de ejecuciones alcanzado. Contacta al desarrollador.")
+        return False
+
+    # Incrementar contador
+    with open(file_path, "w") as f:
+        f.write(str(count + 1))
+    return True
 
 # Configurar logging
 logging.basicConfig(
@@ -174,6 +208,8 @@ def get_user_input():
     return search_term, max_results
 
 def main():
+    if not check_run_limit():
+        return
     search_term, max_results = get_user_input()
     driver = create_driver()
     
